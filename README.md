@@ -3,7 +3,7 @@
 An opinionated 2d animator.
 
 ## Todo:
-- [ ] Create the art format: #1
+- [ ] Create the art format: https://github.com/NoahShomette/toa_animator/issues/1
 - [ ] Add offsets/marker components for sub graphics
 - [ ] Add sub graphics/animations
 - [ ] Add sound effect markers to animations
