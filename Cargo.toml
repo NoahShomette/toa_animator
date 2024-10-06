@@ -1,0 +1,11 @@
+[package]
+name = "toa_animator"
+version = "0.1.0"
+
+[features]
+default = ["serde"]
+serde = ["dep:serde"]
+
+[dependencies]
+bevy = { version = "0.14.2" }
+serde = { version = "1.0.210", optional = true }
