@@ -7,6 +7,9 @@ use crate::{
     FRAME_DURATION,
 };
 
+pub mod anim_state;
+pub mod state_machine;
+
 /// Animation state
 #[derive(Default, Clone, Component, Reflect)]
 pub struct AnimationState {

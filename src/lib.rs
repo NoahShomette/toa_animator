@@ -9,11 +9,12 @@ use bevy::{
 };
 
 mod anim;
+mod format;
 mod state;
 
 pub use {
     anim::{ActiveAnimation, Animation, AnimationMode, Animations, ScopedAction},
-    state::AnimationState,
+    state::{anim_state::AnimationStateId, AnimationState},
 };
 
 pub struct AnimatorPlugin;

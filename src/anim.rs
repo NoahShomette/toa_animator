@@ -1,4 +1,5 @@
 use core::time::Duration;
+use std::iter::FromIterator;
 
 use bevy::{
     prelude::{Component, Deref},

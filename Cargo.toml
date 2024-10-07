@@ -1,11 +1,17 @@
 [package]
 name = "toa_animator"
 version = "0.1.0"
+edition = "2021"
 
 [features]
 default = ["serde"]
 serde = ["dep:serde"]
+# state_machine = ["bevy_reactor"]
 
 [dependencies]
-bevy = { version = "0.14.2" }
+bevy = { version = "0.14.2", default-features = false, features = [
+    "bevy_asset",
+    "bevy_sprite",
+] }
 serde = { version = "1.0.210", optional = true }
+# bevy_reactor = { git = "https://github.com/viridia/bevy_reactor.git", optional = true }
