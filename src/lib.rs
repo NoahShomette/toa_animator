@@ -14,6 +14,7 @@ mod state;
 
 pub use {
     anim::{ActiveAnimation, Animation, AnimationMode, Animations, ScopedAction},
+    format::{ArtCollection, TextureAsset, TextureInfo},
     state::{anim_state::AnimationStateId, AnimationState},
 };
 
