@@ -56,7 +56,7 @@ impl TextureInfo {
 }
 
 /// Representation of a texture in a file
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum TextureAsset {
     Atlas {
         name: String,
