@@ -15,3 +15,4 @@ bevy = { version = "0.14.2", default-features = false, features = [
 ] }
 serde = { version = "1.0.210", optional = true }
 # bevy_reactor = { git = "https://github.com/viridia/bevy_reactor.git", optional = true }
+thiserror = { version = "1.0.64" }

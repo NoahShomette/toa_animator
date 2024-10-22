@@ -135,7 +135,7 @@ impl Default for AnimationMode {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Animations {
     /// Default animation used. Must exist
     pub idle: Animation,
