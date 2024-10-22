@@ -75,8 +75,8 @@ pub enum TextureAsset {
 impl TextureAsset {
     pub fn load(
         &self,
-        asset_server: &ResMut<AssetServer>,
-        atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
+        asset_server: &AssetServer,
+        atlases: &mut Assets<TextureAtlasLayout>,
     ) -> TextureInfo {
         match self {
             TextureAsset::Atlas {
