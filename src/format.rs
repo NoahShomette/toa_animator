@@ -1,114 +1,60 @@
-use std::fmt::Display;
-
 use bevy::{
-    asset::{Asset, AssetLoader, AssetServer, Assets, AsyncReadExt, Handle},
+    asset::{AssetServer, Assets, Handle},
     math::UVec2,
-    prelude::{Image, ResMut},
-    reflect::TypePath,
+    prelude::Image,
+    reflect::Reflect,
     sprite::TextureAtlasLayout,
-    utils::HashMap,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::Animations;
-
-#[derive(Asset, TypePath, Debug, PartialEq, Eq)]
-pub struct ArtCollection {
-    pub animations: Animations,
-    pub textures: HashMap<String, TextureInfo>,
-}
-
 /// Final representation of a loaded texture
-#[derive(TypePath, Debug, PartialEq, Eq)]
-pub enum TextureInfo {
-    Atlas {
-        name: String,
-        texture: Handle<Image>,
-        layout: Handle<TextureAtlasLayout>,
-    },
-    Sprite {
-        name: String,
-        texture: Handle<Image>,
-    },
+#[derive(Debug, PartialEq, Eq, Clone, Reflect)]
+pub struct TextureAtlasInfo {
+    pub name: String,
+    pub texture: Handle<Image>,
+    pub layout: Handle<TextureAtlasLayout>,
 }
 
-impl TextureInfo {
+impl TextureAtlasInfo {
     pub fn texture_handle(&self) -> &Handle<Image> {
-        match self {
-            TextureInfo::Atlas {
-                name: _,
-                texture,
-                layout: _,
-            } => texture,
-            TextureInfo::Sprite { name: _, texture } => texture,
-        }
+        &self.texture
     }
     pub fn texture_name(&self) -> &str {
-        match self {
-            TextureInfo::Atlas {
-                name,
-                texture: _,
-                layout: _,
-            } => name,
-            TextureInfo::Sprite { name, texture: _ } => name,
-        }
+        &self.name
     }
 }
 
 /// Representation of a texture in a file
-#[derive(Serialize, Deserialize, Debug)]
-pub enum TextureAsset {
-    Atlas {
-        name: String,
-        file_path: String,
-        rows: u32,
-        columns: u32,
-        tile_size_x: u32,
-        tile_size_y: u32,
-    },
-    Sprite {
-        name: String,
-        file_path: String,
-    },
+#[derive(Debug, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct TextureAtlasAsset {
+    pub name: String,
+    pub file_path: String,
+    pub rows: u32,
+    pub columns: u32,
+    pub tile_size_x: u32,
+    pub tile_size_y: u32,
 }
 
-impl TextureAsset {
+impl TextureAtlasAsset {
     pub fn load(
         &self,
         asset_server: &AssetServer,
         atlases: &mut Assets<TextureAtlasLayout>,
-    ) -> TextureInfo {
-        match self {
-            TextureAsset::Atlas {
-                name,
-                file_path,
-                rows,
-                columns,
-                tile_size_x,
-                tile_size_y,
-            } => {
-                let building_texture = asset_server.load(file_path.clone());
-                let atlas = TextureAtlasLayout::from_grid(
-                    UVec2::new(*tile_size_x, *tile_size_y),
-                    *columns,
-                    *rows,
-                    None,
-                    None,
-                );
+    ) -> TextureAtlasInfo {
+        let building_texture = asset_server.load(self.file_path.clone());
+        let atlas = TextureAtlasLayout::from_grid(
+            UVec2::new(self.tile_size_x, self.tile_size_y),
+            self.columns,
+            self.rows,
+            None,
+            None,
+        );
 
-                TextureInfo::Atlas {
-                    name: name.clone(),
-                    texture: building_texture,
-                    layout: atlases.add(atlas).clone(),
-                }
-            }
-            TextureAsset::Sprite { name, file_path } => {
-                let building_texture = asset_server.load(file_path.clone());
-                TextureInfo::Sprite {
-                    name: name.clone(),
-                    texture: building_texture,
-                }
-            }
+        TextureAtlasInfo {
+            name: self.name.clone(),
+            texture: building_texture,
+            layout: atlases.add(atlas).clone(),
         }
     }
 }

@@ -1,16 +1,46 @@
 use core::time::Duration;
-use std::iter::FromIterator;
 
 use bevy::{
+    asset::{AssetServer, Assets},
     prelude::{Component, Deref},
     reflect::Reflect,
+    sprite::TextureAtlasLayout,
     utils::HashMap,
 };
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Eq, PartialEq, Component, Reflect)]
+use crate::{TextureAtlasAsset, TextureAtlasInfo};
+
+/// An animation represented as an asset in a file
+#[derive(Debug, Clone, Eq, PartialEq, Component)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct AnimationAsset {
+    /// Frames
+    pub frames: Option<Vec<usize>>,
+    /// Animation mode
+    pub mode: AnimationMode,
+    /// The offset from the end of the file to the frame that the animation should end on. None if the animation is packed completely.
+    pub ending_offset: Option<usize>,
+    pub texture_atlas_asset: TextureAtlasAsset,
+}
+
+impl AnimationAsset {
+    pub fn load(
+        self,
+        asset_server: &AssetServer,
+        atlases: &mut Assets<TextureAtlasLayout>,
+    ) -> Animation {
+        Animation {
+            frames: self.frames,
+            mode: self.mode,
+            ending_offset: self.ending_offset,
+            texture_atlas_info: self.texture_atlas_asset.load(asset_server, atlases),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Component, Reflect)]
 pub struct Animation {
     /// Frames
     pub frames: Option<Vec<usize>>,
@@ -18,48 +48,22 @@ pub struct Animation {
     pub mode: AnimationMode,
     /// The offset from the end of the file to the frame that the animation should end on. None if the animation is packed completely.
     pub ending_offset: Option<usize>,
+    pub texture_atlas_info: TextureAtlasInfo,
 }
 
 impl Animation {
     /// Create a new animation from frames
     #[must_use]
-    pub fn from_frames(frames: impl IntoIterator<Item = usize>) -> Self {
+    pub fn from_frames(
+        frames: impl IntoIterator<Item = usize>,
+        texture_atlas_info: TextureAtlasInfo,
+    ) -> Self {
         Self {
             frames: Some(frames.into_iter().collect()),
             mode: AnimationMode::default(),
             ending_offset: None,
+            texture_atlas_info,
         }
-    }
-
-    /// Create a new animation from an index iterator, using the same frame duration for each frame.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use benimator::{Animation, FrameRate};
-    /// # use std::time::Duration;
-    /// // From an index range
-    /// let animation = Animation::from_indices(0..=5, FrameRate::from_fps(12.0));
-    ///
-    /// // From an index array
-    /// let animation = Animation::from_indices([1, 2, 3, 4], FrameRate::from_fps(12.0));
-    ///
-    /// // Reversed animation
-    /// let animation = Animation::from_indices((0..5).rev(), FrameRate::from_fps(12.0));
-    ///
-    /// // Chained ranges
-    /// let animation = Animation::from_indices((0..3).chain(10..15), FrameRate::from_fps(12.0));
-    /// ```
-    ///
-    /// Note, the [`FrameRate`] may be created from fps, frame-duration and animation-duration
-    ///
-    /// To use different non-uniform frame-duration, see [`from_frames`](Animation::from_frames)
-    ///
-    /// # Panics
-    ///
-    /// Panics if the duration is zero
-    pub fn from_indices(indices: impl IntoIterator<Item = usize>) -> Self {
-        indices.into_iter().collect()
     }
 
     /// Runs the animation once and then stop playing
@@ -113,12 +117,6 @@ pub enum AnimationMode {
     PingPong,
 }
 
-impl FromIterator<usize> for Animation {
-    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
-        Self::from_frames(iter)
-    }
-}
-
 impl Extend<usize> for Animation {
     fn extend<T: IntoIterator<Item = usize>>(&mut self, iter: T) {
         match &mut self.frames {
@@ -136,6 +134,31 @@ impl Default for AnimationMode {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct AnimationsAsset {
+    /// Default animation used. Must exist
+    pub idle: AnimationAsset,
+    /// List of animations for specific situations. If one doesnt exst the idle will be returned
+    pub animations: HashMap<String, AnimationAsset>,
+}
+
+impl AnimationsAsset {
+    pub fn load(
+        self,
+        asset_server: &AssetServer,
+        atlases: &mut Assets<TextureAtlasLayout>,
+    ) -> Animations {
+        Animations {
+            idle: self.idle.load(asset_server, atlases),
+            animations: self
+                .animations
+                .iter()
+                .map(|item| (item.0.clone(), item.1.clone().load(asset_server, atlases)))
+                .collect(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Animations {
     /// Default animation used. Must exist
     pub idle: Animation,
@@ -154,15 +177,6 @@ impl Animations {
         let label = label.into();
 
         self.animations.get(&label).unwrap_or_else(|| self.idle())
-    }
-}
-
-impl Default for Animations {
-    fn default() -> Self {
-        Self {
-            idle: Animation::from_indices(0..0),
-            animations: Default::default(),
-        }
     }
 }
 
