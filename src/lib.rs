@@ -13,7 +13,10 @@ mod format;
 mod state;
 
 pub use {
-    anim::{ActiveAnimation, Animation, AnimationMode, Animations, ScopedAction},
+    anim::{
+        ActiveAnimation, Animation, AnimationAsset, AnimationMode, Animations, AnimationsAsset,
+        ScopedAction,
+    },
     format::{TextureAtlasAsset, TextureAtlasInfo},
     state::{anim_state::AnimationStateId, AnimationState},
 };
