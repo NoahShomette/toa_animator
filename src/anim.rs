@@ -3,7 +3,7 @@ use core::time::Duration;
 use bevy::{
     asset::{AssetServer, Assets},
     prelude::{Component, Deref},
-    reflect::Reflect,
+    reflect::{Reflect, TypePath},
     sprite::TextureAtlasLayout,
     utils::HashMap,
 };
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use crate::{TextureAtlasAsset, TextureAtlasInfo};
 
 /// An animation represented as an asset in a file
-#[derive(Debug, Clone, Eq, PartialEq, Component)]
+#[derive(Debug, Clone, Eq, PartialEq, Component, TypePath)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct AnimationAsset {
     /// Frames
@@ -133,7 +133,8 @@ impl Default for AnimationMode {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, TypePath)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct AnimationsAsset {
     /// Default animation used. Must exist
     pub idle: AnimationAsset,
