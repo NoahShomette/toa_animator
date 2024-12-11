@@ -57,7 +57,7 @@ impl AnimationState {
 
     /// Update the animation state
     #[allow(dead_code)]
-    pub fn update(&mut self, animation: &Animation, delta: Duration) {
+    pub fn update(&mut self, animation: &Animation, delta: Duration, frame_duration: &Duration) {
         self.elapsed_in_frame += delta;
         if !animation.has_frames() {
             return;
@@ -67,7 +67,10 @@ impl AnimationState {
 
         let frame_duration = match animation.mode {
             AnimationMode::ActionReady { frame_duration } => frame_duration,
-            _ => FRAME_DURATION,
+            _ => match &animation.frame_info_override {
+                Some(frame_info) => frame_info.frame_duration,
+                None => *frame_duration,
+            },
         };
 
         let ending_frame = animation.frames.as_ref().unwrap().len() - 1;

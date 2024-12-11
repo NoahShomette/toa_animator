@@ -10,7 +10,7 @@ use bevy::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{TextureAtlasAsset, TextureAtlasInfo};
+use crate::{AnimationFrameInfo, TextureAtlasAsset, TextureAtlasInfo};
 
 /// An animation represented as an asset in a file
 #[derive(Debug, Clone, Eq, PartialEq, Component, TypePath)]
@@ -23,6 +23,8 @@ pub struct AnimationAsset {
     /// The offset from the end of the file to the frame that the animation should end on. None if the animation is packed completely.
     pub ending_offset: Option<usize>,
     pub texture_atlas_asset: TextureAtlasAsset,
+    /// Optional override to specify different animation speeds compared to the global animation speeds
+    pub frame_info_override: Option<AnimationFrameInfo>,
 }
 
 impl AnimationAsset {
@@ -36,6 +38,7 @@ impl AnimationAsset {
             mode: self.mode,
             ending_offset: self.ending_offset,
             texture_atlas_info: self.texture_atlas_asset.load(asset_server, atlases),
+            frame_info_override: self.frame_info_override,
         }
     }
 }
@@ -48,7 +51,10 @@ pub struct Animation {
     pub mode: AnimationMode,
     /// The offset from the end of the file to the frame that the animation should end on. None if the animation is packed completely.
     pub ending_offset: Option<usize>,
+    /// Texture info for this animatino
     pub texture_atlas_info: TextureAtlasInfo,
+    /// Optional override to specify different animation speeds compared to the global animation speeds
+    pub frame_info_override: Option<AnimationFrameInfo>,
 }
 
 impl Animation {
@@ -63,6 +69,7 @@ impl Animation {
             mode: AnimationMode::default(),
             ending_offset: None,
             texture_atlas_info,
+            frame_info_override: None,
         }
     }
 

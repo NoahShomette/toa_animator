@@ -3,10 +3,16 @@ use std::time::Duration;
 use bevy::{
     app::{Plugin, PostUpdate},
     asset::Assets,
-    prelude::{Changed, Children, IntoSystemConfigs, IntoSystemSetConfigs, Query, Res, SystemSet},
+    prelude::{
+        Changed, Children, IntoSystemConfigs, IntoSystemSetConfigs, Query, Res, Resource, SystemSet,
+    },
+    reflect::Reflect,
     sprite::{TextureAtlas, TextureAtlasLayout},
     time::Time,
 };
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 mod anim;
 mod format;
@@ -25,6 +31,7 @@ pub struct AnimatorPlugin;
 
 impl Plugin for AnimatorPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
+        app.init_resource::<AnimationFrameInfo>();
         app.register_type::<Animation>()
             .register_type::<AnimationState>()
             .register_type::<ActiveAnimation>();
@@ -52,6 +59,22 @@ impl Plugin for AnimatorPlugin {
 pub const FRAMES_MS: u64 = 83;
 pub const FRAME_DURATION: Duration = Duration::from_millis(FRAMES_MS);
 
+#[derive(Resource, Debug, Clone, Reflect, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct AnimationFrameInfo {
+    frame_ms: u64,
+    frame_duration: Duration,
+}
+
+impl Default for AnimationFrameInfo {
+    fn default() -> Self {
+        Self {
+            frame_ms: FRAMES_MS,
+            frame_duration: FRAME_DURATION,
+        }
+    }
+}
+
 #[derive(SystemSet, Hash, Clone, Eq, Debug, PartialEq)]
 pub enum AnimationSets {
     ChangeAnimations,
@@ -60,12 +83,13 @@ pub enum AnimationSets {
 }
 
 fn animate(
+    frame_info: Res<AnimationFrameInfo>,
     time: Res<Time>,
     mut query: Query<(&mut AnimationState, &mut TextureAtlas, &ActiveAnimation)>,
 ) {
     for (mut player, mut texture, animation) in query.iter_mut() {
         // Update the state
-        player.update(animation, time.delta());
+        player.update(animation, time.delta(), &frame_info.frame_duration);
         // Update the texture atlas
         texture.index = player.frame_index();
     }
