@@ -62,8 +62,8 @@ pub const FRAME_DURATION: Duration = Duration::from_millis(FRAMES_MS);
 #[derive(Resource, Debug, Clone, Reflect, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct AnimationFrameInfo {
-    frame_ms: u64,
-    frame_duration: Duration,
+    pub frame_ms: u64,
+    pub frame_duration: Duration,
 }
 
 impl Default for AnimationFrameInfo {
